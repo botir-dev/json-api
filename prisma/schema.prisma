@@ -5,7 +5,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url = "postgresql://postgres:MQqFOXuYJrFilzxSxzWAxPbTkbuPtOel@postgres.railway.internal:5432/railway"
+  url = "postgresql://postgres:MQqFOXuYJrFilzxSxzWAxPbTkbuPtOel@shortline.proxy.rlwy.net:53367/railway"
 }
 
 enum Role {
