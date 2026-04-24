@@ -1,8 +1,8 @@
 // src/infrastructure/cache/index.js
-import Redis from 'ioredis';
-import { logger } from '../logger/index.js';
+import Redis from "ioredis";
+import { logger } from "../logger/index.js";
 
-const DEFAULT_TTL = parseInt(process.env.REDIS_TTL || '3600');
+const DEFAULT_TTL = parseInt(process.env.REDIS_TTL || "3600");
 
 class CacheService {
   constructor() {
@@ -11,10 +11,11 @@ class CacheService {
   }
 
   async connect() {
-    const redisUrl = process.env.REDIS_URL;
+    const redisUrl =
+      "redis://default:NceSpfmSLLclHNiTGdkojyHZTAPNYFnZ@redis.railway.internal:6379";
 
     if (!redisUrl) {
-      logger.warn('REDIS_URL not set - caching disabled');
+      logger.warn("REDIS_URL not set - caching disabled");
       return;
     }
 
@@ -26,34 +27,37 @@ class CacheService {
         connectTimeout: 10000,
         retryStrategy: (times) => {
           if (times > 5) {
-            logger.warn('Redis retry limit reached - caching disabled');
+            logger.warn("Redis retry limit reached - caching disabled");
             return null; // stop retrying
           }
           return Math.min(times * 200, 2000);
         },
       });
 
-      this.client.on('connect', () => {
+      this.client.on("connect", () => {
         this.isConnected = true;
-        logger.info('✅ Redis connected');
+        logger.info("✅ Redis connected");
       });
 
-      this.client.on('ready', () => {
+      this.client.on("ready", () => {
         this.isConnected = true;
       });
 
-      this.client.on('error', (err) => {
+      this.client.on("error", (err) => {
         this.isConnected = false;
-        logger.warn({ err: err.message }, 'Redis error - caching disabled');
+        logger.warn({ err: err.message }, "Redis error - caching disabled");
       });
 
-      this.client.on('close', () => {
+      this.client.on("close", () => {
         this.isConnected = false;
       });
 
       await this.client.connect();
     } catch (err) {
-      logger.warn({ err: err.message }, 'Redis connection failed - caching disabled');
+      logger.warn(
+        { err: err.message },
+        "Redis connection failed - caching disabled",
+      );
       this.isConnected = false;
     }
   }
@@ -71,7 +75,7 @@ class CacheService {
     if (!this.isConnected) return;
     try {
       if (ttl) {
-        await this.client.set(key, value, 'EX', ttl);
+        await this.client.set(key, value, "EX", ttl);
       } else {
         await this.client.set(key, value);
       }
@@ -107,7 +111,7 @@ class CacheService {
       const keys = await this.client.keys(pattern);
       if (keys.length > 0) {
         await this.client.del(...keys);
-        logger.debug({ pattern, count: keys.length }, 'Cache keys invalidated');
+        logger.debug({ pattern, count: keys.length }, "Cache keys invalidated");
       }
     } catch {}
   }
